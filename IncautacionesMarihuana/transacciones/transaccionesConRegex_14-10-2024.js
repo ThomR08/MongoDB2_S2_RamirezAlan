@@ -338,26 +338,18 @@ IncauDB.Municipio.aggregate([{
 },
 {
     $lookup: {
-        from: "Departamento",
-        localField: "departamento_id",
-        foreignField: "_id",
-        as: "Depa"
+        from: "Incautacion",
+        localField: "_id",
+        foreignField: "municipio_id",
+        as: "inca"
     }
 },
 {
-    $unwind: "$Depa"
+    $unwind: "$inca"
 },
 {
     $group: {
-        _id: {
-            ano: {
-                $year: "$inca.fecha"
-            },
-            municipioId: "$_id"
-        },
-        nombreMunicipio: {
-            $first: "$nombre"
-        },
+        _id: "$departamento_id",
         totalIncaKg: {
             $sum: "$inca.cantidadEnKg"
         }
@@ -365,16 +357,24 @@ IncauDB.Municipio.aggregate([{
 },
 {
     $sort: {
-        "_id.ano": -1,
         totalIncaKg: -1
     }
 },
 {
+    $lookup: {
+        from: "Departamento",
+        localField: "_id",
+        foreignField: "_id",
+        as: "depa"
+    }
+},
+{
+    $unwind: "$depa"
+},
+{
     $project: {
         _id: 0,
-        nombreMunicipio: 1,
-        codigoMunicipio: 1,
-        ano: "$_id.ano",
-        totalIncaKg: 1
+        nombreDepartamento: "$depa.nombre",
+        totalIncaKgEnMunisItoIta: 1
     }
 }]);
